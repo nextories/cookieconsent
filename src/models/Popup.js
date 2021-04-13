@@ -6,7 +6,8 @@ import {
   categories,
   statuses,
   statusDismiss,
-  statusAllow
+  statusAllow,
+  statusDeny,
 } from "../constants"
 import {
   addCustomStylesheet,
@@ -22,14 +23,11 @@ import {
 } from "../utils"
 
 export default class Popup extends Base {
-  constructor( options ) {
+  constructor( options, initialValues ) {
     super( defaultOptions, options )
-    this.userCategories = {
-      UNCATEGORIZED  : 'DISMISS',
-      ESSENTIAL      : 'ALLOW',
-      PERSONALIZATION: 'DISMISS',
-      ANALYTICS      : 'DISMISS',
-      MARKETING      : 'DISMISS'
+    this.userCategories = initialValues || {
+      ESSENTIEL      : statusAllow,
+      STATISTIQUES   : statusDismiss,
     }
     this.customStyles = {}
     this.hasTransition = !!(function() {
@@ -109,6 +107,10 @@ export default class Popup extends Base {
       } else {
         this.element.style.display = ''
       }
+
+      this.element.querySelectorAll( '.cc-btn [type="checkbox"]' ).forEach( checkbox => {
+        checkbox.dispatchEvent(new Event('change'));
+      });
 
       if (this.options.revokable) {
         this.toggleRevokeButton()
@@ -270,17 +272,19 @@ export default class Popup extends Base {
     const updateCategoryStatus = ( categoryName, status ) => {
       if (isValidStatus(status)) {
         const cookieName = name+'_'+categoryName
-        const chosenBefore = statuses.indexOf( getCookie(cookieName) ) >= 0
-        setCookie(cookieName, status, expiryDays, domain, path, secure)
-        this.emit( "statusChanged", cookieName, status, chosenBefore )
+        const previousStatus = getCookie(cookieName);
+        if (!previousStatus || status !== statusDismiss) {
+          setCookie(cookieName, status, expiryDays, domain, path, secure)
+          this.emit( "statusChanged", cookieName, status, previousStatus )
+        }
       } else {
         this.clearStatuses()
       }
     }
     if ( arguments.length === 0 ) {
-      categories.forEach( category => updateCategoryStatus( category, this.userCategories[ category ] ) )
+      categories.forEach( category => updateCategoryStatus( category.name, this.userCategories[ category.name ] ) )
     } else if (arguments.length === 1){
-      categories.forEach( category => updateCategoryStatus( category, arguments[ 0 ] ) )
+      categories.forEach( category => updateCategoryStatus( category.name, arguments[ 0 ] ) )
     } else if ( arguments.length > 1 ) {
       arguments.forEach( ( categoryStatus, index ) => {
         updateCategoryStatus( this.userCategories[ index ], categoryStatus )
@@ -293,7 +297,7 @@ export default class Popup extends Base {
    * @return { array<string> } - cookie categories status in order of categories
    */
   getStatuses() {
-    return categories.map( categoryName => getCookie(this.options.cookie.name+'_'+categoryName) )
+    return categories.map( category => getCookie(this.options.cookie.name+'_'+category.name) )
   }
 
   /**
@@ -301,8 +305,8 @@ export default class Popup extends Base {
    */
   clearStatuses() {
     const { name, domain, path } = this.options.cookie
-    categories.forEach( categoryName => {
-      setCookie(name+'_'+categoryName, '', -1, domain, path)
+    categories.forEach( category => {
+      setCookie(name+'_'+category.name, '', -1, domain, path)
     })
   }
   
@@ -312,11 +316,11 @@ export default class Popup extends Base {
     }
 
     const statusesValues = this.getStatuses()
-    const matches = statusesValues.map( ( status, index ) => ( { [categories[index]]: isValidStatus( status ) } ) )
+    const matches = statusesValues.map( ( status, index ) => ( { [categories[index].name]: isValidStatus( status ) } ) )
     const hasMatches = matches.filter( match => match[Object.keys(match)[0]] ).length > 0
     statusesValues.forEach( ( status, index ) =>
-      this.userCategories[ categories[ index ] ] === status
-        ? status : this.userCategories[ categories[ index ] ] )
+      this.userCategories[ categories[ index ].name ] === status
+        ? status : this.userCategories[ categories[ index ].name ] )
 
     return hasMatches
   }
@@ -418,8 +422,14 @@ export default class Popup extends Base {
 
     el.addEventListener('click', event => this.handleButtonClick( event ) )
     el.querySelectorAll( '.cc-btn [type="checkbox"]' ).forEach( checkbox => {
+      //Initialize the checked value of checkboxes
+      checkbox.checked = this.userCategories[ checkbox.name ] === statusAllow;
+      if (checkbox.name === 'ESSENTIEL') {
+        checkbox.disabled = true;
+        checkbox.checked = true;
+      }
       checkbox.addEventListener( 'change', () => {
-        this.userCategories[ checkbox.name ] = checkbox.checked ? 'ALLOW' : 'DENY'
+        this.userCategories[ checkbox.name ] = checkbox.checked ? statusAllow : statusDeny
       })
       checkbox.addEventListener( 'click', event => (event.stopPropagation()) )
     })
@@ -526,8 +536,10 @@ export default class Popup extends Base {
       } else if (typeof scrollRange == 'number' && scrollRange >= 0) {
         this.onWindowScroll = () => {
           if (window.pageYOffset > Math.floor(scrollRange)) {
-            this.setStatuses(statusDismiss)
-            this.close(true)
+            if (this.isOpen()) {
+              this.setStatuses(statusDismiss)
+              this.close(true)
+            }
 
             window.removeEventListener('scroll', this.onWindowScroll, { passive: true })
             this.onWindowScroll = null

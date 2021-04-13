@@ -21,6 +21,10 @@
   right: 3em;
   left: unset;
 }
+.form {
+  display: flex;
+  margin: 16px;
+}
 
 /**************************************** FLOATING ****************************************/
 
@@ -96,19 +100,19 @@
   display       : inline-flex;
   flex-direction: column;
   overflow      : visible;
-  .form{
-    text-align: right;
-  }
   .cc-btn {
     margin: 0;
+    padding: 0 10px;
     &.cc-save {
-      margin        : 0;
+      text-transform: uppercase;
       display       : inline-block;
     }
   }
 }
 .cc-categories {
   display: inline-flex;
+  padding: 0;
+  margin: 0;
   .cc-category{
     display  : flex;
     max-width: 100%;
@@ -120,24 +124,28 @@
     outline     : none;
     text-transform: capitalize;
     input[type=checkbox]{
-      float: left;
-      height: 26px;
-      width: calc( 100% - 22px );
+      height: 18px;
+      width: 18px;
+      margin-bottom: 5px;
+      margin-right: 5px;
       display: block;
-      position: absolute;
-      top: 0;
-      left: 2px;
+      cursor: pointer;
+    }
+    label {
+      display: flex;
+      margin: 0;
+      align-items: center;
       cursor: pointer;
     }
     &:not(.cc-info):not(.cc-save){
-      padding-left: 26px;
+      padding-left: 10px;
     }
   }
   .cc-info {
+    font-size: 1.0em;
     border-left : none;
     border-right: 2px solid lightgrey;
     padding     : 4px;
-    font-variant: all-small-caps;
     &:focus + .cc-tooltip{
       display: block;
     }
@@ -158,11 +166,8 @@
       transform : rotate(45deg);
       position  : absolute;
       bottom    : -7px;
-      left      : 10px;
+      left      : 14px;
       box-shadow: 2px 1px 1px rgba( 200, 200, 200, .5 );
-    }
-    p {
-      margin: 0;
     }
   }
 }

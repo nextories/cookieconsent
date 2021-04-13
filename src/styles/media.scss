@@ -51,8 +51,6 @@
     }
     .cc-categories{
       flex-direction: column;
-      width: 100%;
-      margin-right: 8px;
     }
     .cc-category {
       margin: 4px 0;
@@ -63,23 +61,18 @@
     }
   } 
 }
-@media screen and (max-width: 854px) {
-  .cc-window.cc-type-categories .cc-btn.cc-save {
-    margin: 8px 0;
-  }
-}
 
 @media screen and (max-width: 790px) {
   .cc-window.cc-type-categories .cc-categories{
-    display: flex;
     flex-direction: column;
   }
   .cc-categories .cc-category{
     margin: 4px 0;
   }
   .form {
-    width    : 100%;
+    width    : calc(100% - 32px);
     max-width: 350px;
+    flex-direction: column;
   }
   .cc-btn:not(.cc-info):not(.cc-save){
     width: calc( 100% - 16px);

@@ -17,13 +17,13 @@ export default class CookieConsent extends Base {
 
     const answers = categories.map( category => {
       const cookieName = this.options.cookie && this.options.cookie.name ? this.options.cookie.name : 'cookieconsent_status_'
-      const answer = getCookie( cookieName + category )
-      return isValidStatus(answer) ? { [category]: answer } : undefined
+      const answer = getCookie( cookieName + category.name )
+      return isValidStatus(answer) ? { [category.name]: answer } : undefined
     }).filter(obj => obj ? obj[Object.keys(obj)[0]] : false)
 
     // if they have already answered
     if (answers.length > 0) {
-      setTimeout( () => this.emit( "initialized", answers ) )
+      this.initializationComplete( { answers });
     } else if ( this.options.legal && this.options.legal.countryCode ) {
       this.initializationComplete( { code: this.options.legal.countryCode } )
     } else if ( this.options.location ) {
@@ -36,8 +36,9 @@ export default class CookieConsent extends Base {
     if (result.code) {
       this.options = new Legal(this.options.legal).applyLaw( this.options, result.code )
     }
-    this.popup = new Popup( this.options )
-    setTimeout( () => this.emit("initialized", this.popup ), 0 )
+    const initialData = result.answers && result.answers.reduce((obj, val) => ({...obj, ...val}));
+    this.popup = new Popup( this.options, initialData )
+    setTimeout( () => this.emit("initialized", this.popup, initialData ), 0 )
   }
   initializationError( error ) {
     setTimeout( () => this.emit( "error", error, new Popup( this.options ) ), 0 )
