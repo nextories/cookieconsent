@@ -18,5 +18,6 @@ export const setCookie = function ( name, value, expiryDays, domain, path, secur
                     ';expires=' + exdate.toUTCString() +
                     ';path=' + (path || '/') +
                     ( domain ? ';domain=' + domain : '' ) +
-                    ( secure ? ';secure' : '' )
+                    ( secure ? ';secure' : '' ) +
+                    ';SameSite=Strict';
 }
