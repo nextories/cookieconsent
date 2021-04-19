@@ -30,7 +30,7 @@ export default class Popup extends Base {
       STATISTIQUES   : statusDismiss,
     }
     this.customStyles = {}
-    this.hasTransition = !!(function() {
+    this.transitionEnd = (function() {
       const el = document.createElement('div')
       const trans = {
         t: 'transitionend',
@@ -50,6 +50,9 @@ export default class Popup extends Base {
       }
       return ''
     })()
+
+    //TODO RECUPERER LA BONNE VALEUR dans hasTransition
+    this.hasTransition = !!this.transitionEnd;
 
     // returns true if `onComplete` was called
     if (this.canUseCookies()) {

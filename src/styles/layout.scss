@@ -120,6 +120,7 @@
     position : relative;
   }
   .cc-btn {
+    border-radius: 0;
     border-right: none;
     outline     : none;
     text-transform: capitalize;
@@ -139,11 +140,15 @@
     }
     &:not(.cc-info):not(.cc-save){
       padding-left: 10px;
+      border-top-left-radius: 10px;
+      border-bottom-left-radius: 10px;
     }
   }
   .cc-info {
     font-size: 1.0em;
     border-left : none;
+    border-top-right-radius: 10px;
+    border-bottom-right-radius: 10px;
     border-right: 2px solid lightgrey;
     padding     : 4px;
     &:focus + .cc-tooltip{
